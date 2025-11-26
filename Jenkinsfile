@@ -10,14 +10,14 @@ pipeline {
 
     tools {
         maven 'maven'   // Make sure Maven is configured in Jenkins Global Tool Configuration
-        jdk 'Jdk17'    // Make sure Java 17 is configured in Jenkins
+        jdk 'jdk17'    // Make sure Java 17 is configured in Jenkins
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
                 echo "Checking out code from private GitHub repo..."
-                git branch: 'main', url: "${REPO_URL}", credentialsId: 'YOUR_GITHUB_CREDENTIAL_ID'
+                git branch: 'main', url: 'https://github.com/ranjitha1024/sak_spring_jenkins_mysql.git', credentialsId: 'github_token'
             }
         }
 
