@@ -3,6 +3,10 @@ pipeline {
     tools {
         maven 'maven'
     }
+    environment {
+        DEPLOY_DIR = "/home/ubuntu/springapp"
+        JAR_NAME = "spring_app_sak-0.0.1-SNAPSHOT.jar"
+    }
     stages {
         stage('Build') {
             steps {
@@ -11,18 +15,25 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh '''
+                sh """
                     echo "Stopping existing Spring Boot application if running..."
-                    if pgrep -f spring_app_sak-0.0.1-SNAPSHOT.jar > /dev/null; then
-                        sudo pkill -f spring_app_sak-0.0.1-SNAPSHOT.jar
-                        echo "Application stopped."
+                    mkdir -p ${DEPLOY_DIR}
+
+                    # Stop old app if running
+                    if pgrep -f app.jar > /dev/null; then
+                        sudo pkill -f app.jar
+                        echo "Old application stopped."
                     else
                         echo "No existing application running."
                     fi
 
-                    echo "Starting the Spring Boot application..."
-                    sudo java -jar target/spring_app_sak-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
-                '''
+                    # Copy new JAR to deployment folder
+                    cp target/${JAR_NAME} ${DEPLOY_DIR}/app.jar
+
+                    # Start app in background
+                    nohup java -jar ${DEPLOY_DIR}/app.jar > ${DEPLOY_DIR}/log.txt 2>&1 &
+                    echo "Application started on port 8088"
+                """
             }
         }
     }
@@ -31,7 +42,8 @@ pipeline {
             echo "Deployed successfully"
         }
         failure {
-            echo "Failed to Deploy"
+            echo "Failed to deploy"
         }
     }
 }
+
